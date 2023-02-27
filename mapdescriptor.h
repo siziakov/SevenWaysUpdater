@@ -26,31 +26,4 @@ public:
     QString GetFileLength(int size);
 };
 
-//class MapDescriptor: public QObject
-//{
-//    Q_OBJECT
-
-//public:
-//    MapDescriptor();
-//    MapDescriptor(const MapDescriptor &mapDescriptor);
-//    MapDescriptor(QString server, QString filename, QString name);
-//    ~MapDescriptor();
-
-//    const MapDescriptor operator = (const MapDescriptor &mapDescriptor);
-
-//    QString Server;
-//    QString Filename;
-//    QString Name;
-//    QString FileSize;
-
-//public slots:
-//    void fileSize();
-//    void httpError(QNetworkReply::NetworkError code);
-
-//private:
-//    void requestFileSize(const QString &url);
-//    QNetworkAccessManager *m_netmanager;
-//    QNetworkReply *m_reply;
-//};
-
 #endif // MAPDESCRIPTOR_H
