@@ -16,6 +16,8 @@ void HTTPFileSize::fileSize()
 {
     md->FileSize = m_reply->header(QNetworkRequest::ContentLengthHeader).toInt();
     md->FileSizeS = md->GetFileLength(md->FileSize);
+    md->Date = m_reply->header(QNetworkRequest::LastModifiedHeader).toDate();
+    md->DateS = md->Date.toString("dd.MM.yyyy");
     m_reply->deleteLater();
     m_netmanager->deleteLater();
     callBackFunction(md);

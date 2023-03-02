@@ -1,10 +1,8 @@
 #ifndef MAPDESCRIPTOR_H
 #define MAPDESCRIPTOR_H
 
-//#include <QNetworkAccessManager>
-//#include <QNetworkReply>
 #include <QString>
-//#include <QObject>
+#include <QDate>
 
 class MapDescriptor
 {
@@ -22,6 +20,8 @@ public:
     QString Name;
     int FileSize;
     QString FileSizeS;
+    QDate Date;
+    QString DateS;
 
     QString GetFileLength(int size);
 };

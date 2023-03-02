@@ -147,11 +147,12 @@ void MainWindow::fillFolders()
 
 void MainWindow::fillListOfMaps()
 {
-    mapsTree->setColumnCount(3);
+    mapsTree->setColumnCount(4);
     QStringList headerLabels;
     headerLabels.append(tr("group"));
     headerLabels.append((tr("map")));
     headerLabels.append(tr("size"));
+    headerLabels.append(tr("date"));
     mapsTree->setHeaderLabels(headerLabels);
     for (MapsGroup mg: *maps->Groups)
     {
@@ -165,6 +166,7 @@ void MainWindow::fillListOfMaps()
             QTreeWidgetItem *subItem = new QTreeWidgetItem();
             subItem->setText(1, md.Name);
             subItem->setText(2, md.FileSizeS);
+            subItem->setText(3, md.DateS);
             subItem->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
             subItem->setCheckState(0, Qt::Checked);
             item->addChild(subItem);
@@ -181,7 +183,10 @@ void MainWindow::updateFileSizeOfMap(MapDescriptor *md)
         {
             QTreeWidgetItem *item = topItem->child(j);
             if (item->text(1) == md->Name)
+            {
                 item->setText(2, md->FileSizeS);
+                item->setText(3, md->DateS);
+            }
         }
     }
 }
