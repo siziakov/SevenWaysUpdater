@@ -19,6 +19,9 @@ public:
 
     void AddMaps(QList<MapDescriptor> maps);
     int Count();
+
+    MapDescriptor Find(QString name);
+    void UpdateFileInfo(MapDescriptor md);
 };
 
 #endif // MAPSGROUP_H

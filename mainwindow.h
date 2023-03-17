@@ -24,6 +24,12 @@ public:
 private slots:
     void on_btnSelectFolder_clicked();
 
+    void on_btnFullUpdate_clicked();
+
+    void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+
+    void on_btnFastUpddate_clicked();
+
 public slots:
     void treeItemChanged(QTreeWidgetItem *item, int column); // slot function
 
@@ -32,23 +38,31 @@ private:
     QString lastOpenedFile;
     QString EXEFolder;
     QString MAPSFolder;
+    QString CacheFolder;
+
+    qint64 totalSizeOfSelectedMaps;
+    qint64 totalDownloadedBytes;
+
+    QBrush mapIsOnDeviceBrush;
+
+    static Maps MapSet;
 
     static QTreeWidget *mapsTree;
-
-    static void fileSizeChanged(MapDescriptor *md);
 
     void writeSettings();
     void readSettings();
     void fillFolders();
     void fillListOfMaps();
 
-    static void updateFileSizeOfMap(MapDescriptor *md);
-
     void requestFileSize(MapDescriptor *md);
 
-    Maps *maps;
+    void prepareAndUpdateMaps();
 
     void initMaps();
+
+    void doUpdate(QList<MapDescriptor> *mapsToUpdate, QString folderToSave);
+
+    void mapInfoUpdated(MapDescriptor *md);
 
 };
 

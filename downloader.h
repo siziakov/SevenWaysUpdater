@@ -17,6 +17,8 @@ public:
     // Метод для запуска скачиввания
     bool get(const QString& targetFolder, const QUrl& url);
 
+    static QString CacheFolder;
+
 public slots:
     // Метод отмены загрузки
     void cancelDownload();
@@ -35,6 +37,9 @@ private:
     QNetworkReply* m_currentReply {nullptr};    // Текущий обрабатываемый запрос
     QFile* m_file                 {nullptr};    // Текущий файл в который идёт запись
     QNetworkAccessManager m_manager;            // Сетевой менеджер для загрузки файлов
+    QString targetFolder;
+
+    static int on_extract(const char *filename, void *arg);
 };
 
 #endif // DOWNLOADER_H

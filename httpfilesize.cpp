@@ -1,10 +1,9 @@
 #include "httpfilesize.h"
 
-HTTPFileSize::HTTPFileSize(MapDescriptor *mapDescriptor, void (*func)(MapDescriptor *md), QObject *parent)
+HTTPFileSize::HTTPFileSize(MapDescriptor *mapDescriptor, QObject *parent)
     : QObject{parent}
 {
     md = mapDescriptor;
-    callBackFunction = func;
 }
 
 void HTTPFileSize::RequestSize()
@@ -16,11 +15,13 @@ void HTTPFileSize::fileSize()
 {
     md->FileSize = m_reply->header(QNetworkRequest::ContentLengthHeader).toInt();
     md->FileSizeS = md->GetFileLength(md->FileSize);
-    md->Date = m_reply->header(QNetworkRequest::LastModifiedHeader).toDate();
+    md->Date = m_reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     md->DateS = md->Date.toString("dd.MM.yyyy");
     m_reply->deleteLater();
     m_netmanager->deleteLater();
-    callBackFunction(md);
+
+    emit mapInfoUpdated(md);
+    //callBackFunction(md);
 }
 
 void HTTPFileSize::httpError(QNetworkReply::NetworkError code)

@@ -4,16 +4,23 @@
 #include <QNetworkRequest>
 #include <QFile>
 #include <QDir>
+#include <QStandardPaths>
+
+#include "zip.h"
+
+QString Downloader::CacheFolder;
 
 Downloader::Downloader(QObject* parent) :
     BaseClass(parent)
 {
     // Подключаемся к сигналу finished
     connect(&m_manager, &QNetworkAccessManager::finished, this, &Downloader::onReply);
+    CacheFolder = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QDir::separator();
 }
 
 bool Downloader::get(const QString& targetFolder, const QUrl& url)
 {
+    this->targetFolder = targetFolder;
     if (targetFolder.isEmpty() || url.isEmpty())
     {
         return false;
@@ -21,7 +28,7 @@ bool Downloader::get(const QString& targetFolder, const QUrl& url)
 
     // Cоздаём объект класса файла для скачивания
     // здесь имеется целевая директория и имя файла, которое выделяется из URL
-    m_file = new QFile(targetFolder + QDir::separator() + url.fileName());
+    m_file = new QFile(CacheFolder + url.fileName());
     // Пробуем открыть файл
     if (!m_file->open(QIODevice::WriteOnly))
     {
@@ -50,6 +57,7 @@ void Downloader::onReadyRead()
     {
         // записываем их в файл
         m_file->write(m_currentReply->readAll());
+        m_file->flush();
     }
 }
 
@@ -67,9 +75,12 @@ void Downloader::onReply(QNetworkReply* reply)
     // По завершению запроса
     if (reply->error() == QNetworkReply::NoError)
     {
+        QString fileName = m_file->fileName();
         // сохраням файл
         m_file->flush();
         m_file->close();
+
+        zip_extract(fileName.toStdString().c_str(), targetFolder.toStdString().c_str(), Downloader::on_extract, NULL);
     }
     else
     {
@@ -80,4 +91,9 @@ void Downloader::onReply(QNetworkReply* reply)
     delete m_file;
     m_file = nullptr;
     reply->deleteLater();
+}
+
+int Downloader::on_extract(const char *filename, void *arg)
+{
+    return 0;
 }

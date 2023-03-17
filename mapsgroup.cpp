@@ -17,13 +17,32 @@ MapsGroup::~MapsGroup()
 void MapsGroup::AddMaps(QList<MapDescriptor> maps)
 {
     MapDescriptors = maps;
-//    for (MapDescriptor map : maps)
-//    {
-//        MapDescriptors.push_back(map);
-//    }
 }
 
 int MapsGroup::Count()
 {
     return MapDescriptors.size();
+}
+
+MapDescriptor MapsGroup::Find(QString name)
+{
+    for (MapDescriptor md: MapDescriptors)
+    {
+        if (QString::compare(name, md.Name) == 0)
+            return md;
+    }
+    return MapDescriptor::Empty;
+}
+
+void MapsGroup::UpdateFileInfo(MapDescriptor md)
+{
+    for (MapDescriptor map: MapDescriptors)
+    {
+        if (QString::compare(map.Name, md.Name) == 0)
+        {
+            map = md;
+            //map.UpdateFileInfo(md);
+            break;
+        }
+    }
 }

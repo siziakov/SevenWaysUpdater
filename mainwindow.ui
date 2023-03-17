@@ -46,7 +46,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="btnFastUpddate">
         <property name="minimumSize">
          <size>
           <width>262</width>
@@ -54,12 +54,12 @@
          </size>
         </property>
         <property name="text">
-         <string>Check Updates</string>
+         <string>Fast Update</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="btnFullUpdate">
         <property name="minimumSize">
          <size>
           <width>263</width>
@@ -67,7 +67,7 @@
          </size>
         </property>
         <property name="text">
-         <string>PushButton</string>
+         <string>Full Update</string>
         </property>
        </widget>
       </item>

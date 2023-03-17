@@ -9,10 +9,13 @@ public:
     Maps();
     ~Maps();
 
-    void AddMapsGroup(MapsGroup *mapsGroup);
+    void AddMapsGroup(MapsGroup mapsGroup);
     int Count();
 
-    QList<MapsGroup> *Groups;
+    MapDescriptor Find(QString name);
+    void UpdateFileInfo(MapDescriptor md);
+
+    QList<MapsGroup> Groups;
 };
 
 #endif // MAPS_H

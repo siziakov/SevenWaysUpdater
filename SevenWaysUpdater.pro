@@ -1,6 +1,8 @@
-QT       += core gui network
+QT       += core gui network gui-private
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+LIBS += -lz
 
 CONFIG += c++11
 
@@ -15,7 +17,8 @@ SOURCES += \
     mainwindow.cpp \
     mapdescriptor.cpp \
     maps.cpp \
-    mapsgroup.cpp
+    mapsgroup.cpp \
+    zip.c
 
 HEADERS += \
     downloader.h \
@@ -27,7 +30,9 @@ HEADERS += \
     maps.h \
     maps.h \
     mapsgroup.h \
-    mapsgroup.h
+    mapsgroup.h \
+    miniz.h \
+    zip.h
 
 FORMS += \
     mainwindow.ui
