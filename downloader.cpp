@@ -37,6 +37,7 @@ bool Downloader::get(const QString& targetFolder, const QUrl& url)
         return false;
     }
 
+    bytesPart = 0;
     // Создаём запрос
     QNetworkRequest request(url);
     // Обязательно разрешаем переходить по редиректам
@@ -67,6 +68,7 @@ void Downloader::cancelDownload()
     if (m_currentReply)
     {
         m_currentReply->abort();
+        bytesPart = 0;
     }
 }
 
@@ -87,6 +89,7 @@ void Downloader::onReply(QNetworkReply* reply)
     {
         // Или удаляем его в случае ошибки
         m_file->remove();
+        bytesPart = 0;
     }
 
     delete m_file;
@@ -97,4 +100,11 @@ void Downloader::onReply(QNetworkReply* reply)
 int Downloader::on_extract(const char *filename, void *arg)
 {
     return 0;
+}
+
+void Downloader::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    qint64 part = bytesReceived - bytesPart;
+    bytesPart = bytesReceived;
+    emit updateDownloadProgressPart(part, bytesTotal);
 }

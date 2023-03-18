@@ -42,7 +42,6 @@ private:
 
     qint64 totalSizeOfSelectedMaps;
     qint64 totalDownloadedBytes;
-    qint64 prevBytes;
 
     QBrush mapIsOnDeviceBrush;
 

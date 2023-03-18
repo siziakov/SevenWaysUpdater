@@ -25,7 +25,7 @@ public slots:
 
 signals:
     // Сигнал передающий информацию о прогрессе загрузки
-    void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void updateDownloadProgressPart(qint64 bytesReceived, qint64 bytesTotal);
 
 private slots:
     // Слот для постепенного считывания загружаемых данных
@@ -39,7 +39,9 @@ private:
     QNetworkAccessManager m_manager;            // Сетевой менеджер для загрузки файлов
     QString targetFolder;
 
+    qint64 bytesPart;
     static int on_extract(const char *filename, void *arg);
+    void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 };
 
 #endif // DOWNLOADER_H

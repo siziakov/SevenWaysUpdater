@@ -504,13 +504,12 @@ void MainWindow::doUpdate(QList<MapDescriptor> *mapsToUpdate, QString folderToSa
         ui->progressBarFile->setValue(0);
         Downloader *d = new Downloader();
         d->get(folderToSave, md.GetFullURL());
-        connect(d, SIGNAL(updateDownloadProgress(qint64, qint64)), this, SLOT(updateDownloadProgress(qint64, qint64)));
+        connect(d, SIGNAL(updateDownloadProgressPart(qint64, qint64)), this, SLOT(updateDownloadProgress(qint64, qint64)));
     }
 }
 
 void MainWindow::mapInfoUpdated(MapDescriptor *md)
 {
-    //MapSet.UpdateFileInfo(md);
     for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
     {
         QTreeWidgetItem *topItem = mapsTree->topLevelItem(i);
@@ -560,7 +559,6 @@ void MainWindow::prepareAndUpdateMaps()
     ui->progressBar->setValue(0);
     totalDownloadedBytes = 0;
     totalSizeOfSelectedMaps = 0;
-    prevBytes = 0;
     QList<MapDescriptor> *mapsToUpdate = new QList<MapDescriptor>();
     for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
     {
@@ -590,13 +588,8 @@ void MainWindow::prepareAndUpdateMaps()
 
 void MainWindow::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
-    totalDownloadedBytes += (bytesReceived - prevBytes);
-    prevBytes = bytesReceived;
-    //if (bytesReceived == bytesTotal) totalDownloadedBytes += bytesReceived;
-    //ui->progressBarFile->setMaximum(bytesTotal);
-    //ui->progressBarFile->setValue(bytesReceived);
+    totalDownloadedBytes += bytesReceived;
     ui->progressBar->setValue(totalDownloadedBytes);
-    qDebug() << QString("%1 [%2]").arg(totalDownloadedBytes).arg(totalSizeOfSelectedMaps);
 }
 
 
