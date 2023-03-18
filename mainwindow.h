@@ -28,6 +28,8 @@ private slots:
 
     void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
+    void updateFileWasUnzipped(bool result);
+
     void on_btnFastUpddate_clicked();
 
 public slots:
@@ -42,6 +44,7 @@ private:
 
     qint64 totalSizeOfSelectedMaps;
     qint64 totalDownloadedBytes;
+    int unzippedFiles;
 
     QBrush mapIsOnDeviceBrush;
 

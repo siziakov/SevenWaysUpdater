@@ -21,7 +21,6 @@ void HTTPFileSize::fileSize()
     m_netmanager->deleteLater();
 
     emit mapInfoUpdated(md);
-    //callBackFunction(md);
 }
 
 void HTTPFileSize::httpError(QNetworkReply::NetworkError code)

@@ -72,7 +72,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="btnCachedUpdate">
         <property name="minimumSize">
          <size>
           <width>262</width>
@@ -80,7 +80,7 @@
          </size>
         </property>
         <property name="text">
-         <string>PushButton</string>
+         <string>Cached update</string>
         </property>
        </widget>
       </item>
@@ -94,7 +94,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QProgressBar" name="progressBarFile">
+     <widget class="QProgressBar" name="progressBarUnzip">
       <property name="value">
        <number>24</number>
       </property>

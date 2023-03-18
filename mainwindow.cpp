@@ -16,10 +16,11 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     mapIsOnDeviceBrush.setStyle(Qt::SolidPattern);
-    mapIsOnDeviceBrush.setColor(QColor(150, 150, 150));
+    mapIsOnDeviceBrush.setColor(QColor(150, 150, 250));
     ui->setupUi(this);
     mapsTree = ui->treeWidget;
     ui->progressBar->setValue(0);
+    ui->progressBarUnzip->setValue(0);
 
     readSettings();
     if (lastOpenedFile.isEmpty())
@@ -175,8 +176,8 @@ void MainWindow::fillListOfMaps()
             if (md.FileExists())
             {
                 subItem->setBackground(1, mapIsOnDeviceBrush);
-                subItem->setBackground(2, mapIsOnDeviceBrush);
-                subItem->setBackground(3, mapIsOnDeviceBrush);
+                //subItem->setBackground(2, mapIsOnDeviceBrush);
+                //subItem->setBackground(3, mapIsOnDeviceBrush);
             }
             item->addChild(subItem);
         }
@@ -501,10 +502,10 @@ void MainWindow::doUpdate(QList<MapDescriptor> *mapsToUpdate, QString folderToSa
 {
     for (MapDescriptor md: *mapsToUpdate)
     {
-        ui->progressBarFile->setValue(0);
         Downloader *d = new Downloader();
         d->get(folderToSave, md.GetFullURL());
         connect(d, SIGNAL(updateDownloadProgressPart(qint64, qint64)), this, SLOT(updateDownloadProgress(qint64, qint64)));
+        connect(d, &Downloader::updateFileWasUnzipped, this, &MainWindow::updateFileWasUnzipped);
     }
 }
 
@@ -557,8 +558,10 @@ void MainWindow::on_btnFullUpdate_clicked()
 void MainWindow::prepareAndUpdateMaps()
 {
     ui->progressBar->setValue(0);
+    ui->progressBarUnzip->setValue(0);
     totalDownloadedBytes = 0;
     totalSizeOfSelectedMaps = 0;
+    unzippedFiles = 0;
     QList<MapDescriptor> *mapsToUpdate = new QList<MapDescriptor>();
     for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
     {
@@ -582,6 +585,7 @@ void MainWindow::prepareAndUpdateMaps()
         }
     }
     ui->progressBar->setMaximum(totalSizeOfSelectedMaps);
+    ui->progressBarUnzip->setMaximum(mapsToUpdate->size());
     doUpdate(mapsToUpdate, MAPSFolder);
     delete mapsToUpdate;
 }
@@ -590,6 +594,12 @@ void MainWindow::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     totalDownloadedBytes += bytesReceived;
     ui->progressBar->setValue(totalDownloadedBytes);
+}
+
+void MainWindow::updateFileWasUnzipped(bool result)
+{
+    if (result)
+        ui->progressBarUnzip->setValue(++unzippedFiles);
 }
 
 

@@ -83,7 +83,8 @@ void Downloader::onReply(QNetworkReply* reply)
         m_file->flush();
         m_file->close();
 
-        zip_extract(fileName.toStdString().c_str(), targetFolder.toStdString().c_str(), Downloader::on_extract, NULL);
+        int res = zip_extract(fileName.toStdString().c_str(), targetFolder.toStdString().c_str(), Downloader::on_extract, nullptr);
+        emit updateFileWasUnzipped(res == 0);
     }
     else
     {

@@ -26,6 +26,7 @@ public slots:
 signals:
     // Сигнал передающий информацию о прогрессе загрузки
     void updateDownloadProgressPart(qint64 bytesReceived, qint64 bytesTotal);
+    void updateFileWasUnzipped(bool result);
 
 private slots:
     // Слот для постепенного считывания загружаемых данных

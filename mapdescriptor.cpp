@@ -73,7 +73,7 @@ bool MapDescriptor::FileIsOlder()
 {
     QString fileOnDevice = MAPSFolder + QString(Filename).replace(".zip", ".7w");
     QFileInfo fi(fileOnDevice);
-    return fi.lastRead() < Date;
+    return fi.lastRead().date() < Date.date();
 }
 
 QString MapDescriptor::GetFullURL()
