@@ -51,7 +51,7 @@ QString MapDescriptor::GetFileLength(int size)
 
 bool MapDescriptor::FileExists()
 {
-    QString fileOnDevice = MAPSFolder + Filename.replace(".zip", ".7w");
+    QString fileOnDevice = MAPSFolder + QString(Filename).replace(".zip", ".7w");
     QFileInfo fi(fileOnDevice);
     return fi.exists();
 }
@@ -71,7 +71,7 @@ bool MapDescriptor::Equals(MapDescriptor md)
 
 bool MapDescriptor::FileIsOlder()
 {
-    QString fileOnDevice = MAPSFolder + Filename.replace(".zip", ".7w");
+    QString fileOnDevice = MAPSFolder + QString(Filename).replace(".zip", ".7w");
     QFileInfo fi(fileOnDevice);
     return fi.lastRead() < Date;
 }

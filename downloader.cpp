@@ -72,8 +72,9 @@ void Downloader::cancelDownload()
 
 void Downloader::onReply(QNetworkReply* reply)
 {
+    QNetworkReply::NetworkError error = reply->error();
     // По завершению запроса
-    if (reply->error() == QNetworkReply::NoError)
+    if (error == QNetworkReply::NoError)
     {
         QString fileName = m_file->fileName();
         // сохраням файл
