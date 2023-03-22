@@ -46,19 +46,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="btnFastUpddate">
-        <property name="minimumSize">
-         <size>
-          <width>262</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Fast Update</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="btnFullUpdate">
         <property name="minimumSize">
          <size>
@@ -67,7 +54,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Full Update</string>
+         <string>Update</string>
         </property>
        </widget>
       </item>
