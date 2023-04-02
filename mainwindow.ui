@@ -74,6 +74,13 @@
      </layout>
     </item>
     <item>
+     <widget class="QCheckBox" name="cbCachedUpdate">
+      <property name="text">
+       <string>Cached update</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QProgressBar" name="progressBar">
       <property name="value">
        <number>24</number>

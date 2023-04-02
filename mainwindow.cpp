@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     mapsTree = ui->treeWidget;
     ui->progressBar->setValue(0);
     ui->progressBarUnzip->setValue(0);
+    ui->btnCachedUpdate->setEnabled(false);
 
     readSettings();
     if (lastOpenedFile.isEmpty())
@@ -89,7 +90,7 @@ void MainWindow::treeItemChanged(QTreeWidgetItem *item, int column)
         int count = item->childCount(); // Return to the number of child nodes of the current node
         if(count > 0) // is a tree node
         {
-            for (int i = 0; i<count ; i++)
+            for (int i = 0; i < count ; i++)
             {
                 // Select the child node and set it to select the status
                 item->child(i)->setCheckState(0,Qt::Checked); // CHILD (i) Returns the item to which the item is given in the subkey
@@ -106,7 +107,7 @@ void MainWindow::treeItemChanged(QTreeWidgetItem *item, int column)
         int count = item->childCount();
         if(count > 0)
         {
-            for(int i = 0 ;i<count;i++)
+            for(int i = 0 ; i < count; i++)
             {
                 item->child(i)->setCheckState(0,Qt::Unchecked);
             }
@@ -147,6 +148,7 @@ void MainWindow::fillFolders()
     QDir cacheDir(CacheFolder);
     if (!cacheDir.exists())
         QDir().mkpath(CacheFolder);
+    checkCache();
 }
 
 void MainWindow::fillListOfMaps()
@@ -184,11 +186,137 @@ void MainWindow::fillListOfMaps()
     }
 }
 
+void MainWindow::checkCache()
+{
+    QDir zipFiles(CacheFolder, "*.zip");
+    QStringList files = zipFiles.entryList();
+    int filesCount = files.count();
+    ui->btnCachedUpdate->setEnabled(filesCount > 0);
+}
+
 void MainWindow::requestFileSize(MapDescriptor *md)
 {
     HTTPFileSize *fs = new HTTPFileSize(md, this);
     QObject::connect(fs, &HTTPFileSize::mapInfoUpdated, this, &MainWindow::mapInfoUpdated);
     fs->RequestSize();
+}
+
+void MainWindow::doUpdate(QList<MapDescriptor> *mapsToUpdate, QString folderToSave)
+{
+    for (MapDescriptor md: *mapsToUpdate)
+    {
+        Downloader *d = new Downloader(this, ui->cbCachedUpdate->isChecked());
+        d->get(folderToSave, md.GetFullURL());
+        connect(d, SIGNAL(updateDownloadProgressPart(qint64, qint64)), this, SLOT(updateDownloadProgress(qint64, qint64)));
+        connect(d, &Downloader::updateFileWasUnzipped, this, &MainWindow::updateFileWasUnzipped);
+    }
+}
+
+void MainWindow::mapInfoUpdated(MapDescriptor *md)
+{
+    for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
+    {
+        QTreeWidgetItem *topItem = mapsTree->topLevelItem(i);
+        for (int j = 0; j < topItem->childCount(); j++)
+        {
+            QTreeWidgetItem *item = topItem->child(j);
+            if (item->text(1) == md->Name)
+            {
+                item->setText(2, md->FileSizeS);
+                item->setText(3, md->DateS);
+                if (md->FileExists())
+                {
+                    if (md->FileIsOlder())
+                        item->setCheckState(0, Qt::Checked);
+                    else
+                        item->setCheckState(0, Qt::Unchecked);
+                }
+            }
+        }
+    }
+    for (int i = 0; i < MapSet.Groups.size(); i++)
+    {
+        for (int j = 0; j < MapSet.Groups[i].MapDescriptors.size(); j++)
+        {
+            if (MapSet.Groups[i].MapDescriptors[j].Name == md->Name)
+            {
+                MapSet.Groups[i].MapDescriptors[j] = *md;
+                break;
+            }
+        }
+    }
+}
+
+
+void MainWindow::on_btnFullUpdate_clicked()
+{
+    prepareAndUpdateMaps();
+}
+
+void MainWindow::prepareAndUpdateMaps()
+{
+    ui->progressBar->setValue(0);
+    ui->progressBarUnzip->setValue(0);
+    totalDownloadedBytes = 0;
+    totalSizeOfSelectedMaps = 0;
+    unzippedFiles = 0;
+    QList<MapDescriptor> *mapsToUpdate = new QList<MapDescriptor>();
+    for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
+    {
+        QTreeWidgetItem *topItem = mapsTree->topLevelItem(i);
+        for (int j = 0; j < topItem->childCount(); j++)
+        {
+            QTreeWidgetItem *item = topItem->child(j);
+            if (item->checkState(0))
+            {
+                QString mapName = item->text(1);
+                if (!mapName.isEmpty())
+                {
+                    MapDescriptor md = MapSet.Find(mapName);
+                    if (!md.Equals(MapDescriptor::Empty))
+                    {
+                        mapsToUpdate->append(md);
+                        totalSizeOfSelectedMaps += md.FileSize;
+                    }
+                }
+            }
+        }
+    }
+    ui->progressBar->setMaximum(totalSizeOfSelectedMaps);
+    ui->progressBarUnzip->setMaximum(mapsToUpdate->size());
+    doUpdate(mapsToUpdate, MAPSFolder);
+    delete mapsToUpdate;
+}
+
+void MainWindow::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    totalDownloadedBytes += bytesReceived;
+    ui->progressBar->setValue(totalDownloadedBytes);
+    if (totalDownloadedBytes >= totalSizeOfSelectedMaps)
+        checkCache();
+}
+
+void MainWindow::updateFileWasUnzipped(bool result)
+{
+    if (result)
+        ui->progressBarUnzip->setValue(++unzippedFiles);
+    checkCache();
+}
+
+void MainWindow::on_btnCachedUpdate_clicked()
+{
+    ui->btnCachedUpdate->setEnabled(false);
+    QDir zipFiles(CacheFolder, "*.zip");
+    QStringList files = zipFiles.entryList();
+    int filesCount = files.count();
+    ui->progressBarUnzip->setValue(0);
+    ui->progressBarUnzip->setMaximum(filesCount);
+    for (int i = 0; i < filesCount; i++)
+    {
+        Downloader *d = new Downloader(this, true);
+        connect(d, &Downloader::updateFileWasUnzipped, this, &MainWindow::updateFileWasUnzipped);
+        d->unzipFile(MAPSFolder, CacheFolder + files[i], true);
+    }
 }
 
 void MainWindow::initMaps()
@@ -497,109 +625,4 @@ void MainWindow::initMaps()
     MapSet.AddMapsGroup(*sfo);
     MapSet.AddMapsGroup(*dfo);
 }
-
-void MainWindow::doUpdate(QList<MapDescriptor> *mapsToUpdate, QString folderToSave)
-{
-    for (MapDescriptor md: *mapsToUpdate)
-    {
-        Downloader *d = new Downloader();
-        d->get(folderToSave, md.GetFullURL());
-        connect(d, SIGNAL(updateDownloadProgressPart(qint64, qint64)), this, SLOT(updateDownloadProgress(qint64, qint64)));
-        connect(d, &Downloader::updateFileWasUnzipped, this, &MainWindow::updateFileWasUnzipped);
-    }
-}
-
-void MainWindow::mapInfoUpdated(MapDescriptor *md)
-{
-    for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
-    {
-        QTreeWidgetItem *topItem = mapsTree->topLevelItem(i);
-        for (int j = 0; j < topItem->childCount(); j++)
-        {
-            QTreeWidgetItem *item = topItem->child(j);
-            if (item->text(1) == md->Name)
-            {
-                item->setText(2, md->FileSizeS);
-                item->setText(3, md->DateS);
-                if (md->FileExists())
-                {
-                    if (md->FileIsOlder())
-                        item->setCheckState(0, Qt::Checked);
-                    else
-                        item->setCheckState(0, Qt::Unchecked);
-                }
-            }
-        }
-    }
-    for (int i = 0; i < MapSet.Groups.size(); i++)
-    {
-        for (int j = 0; j < MapSet.Groups[i].MapDescriptors.size(); j++)
-        {
-            if (MapSet.Groups[i].MapDescriptors[j].Name == md->Name)
-            {
-                MapSet.Groups[i].MapDescriptors[j] = *md;
-                break;
-            }
-        }
-    }
-}
-
-
-void MainWindow::on_btnFastUpddate_clicked()
-{
-    prepareAndUpdateMaps();
-}
-
-void MainWindow::on_btnFullUpdate_clicked()
-{
-    prepareAndUpdateMaps();
-}
-
-void MainWindow::prepareAndUpdateMaps()
-{
-    ui->progressBar->setValue(0);
-    ui->progressBarUnzip->setValue(0);
-    totalDownloadedBytes = 0;
-    totalSizeOfSelectedMaps = 0;
-    unzippedFiles = 0;
-    QList<MapDescriptor> *mapsToUpdate = new QList<MapDescriptor>();
-    for (int i = 0; i < mapsTree->topLevelItemCount(); i++)
-    {
-        QTreeWidgetItem *topItem = mapsTree->topLevelItem(i);
-        for (int j = 0; j < topItem->childCount(); j++)
-        {
-            QTreeWidgetItem *item = topItem->child(j);
-            if (item->checkState(0))
-            {
-                QString mapName = item->text(1);
-                if (!mapName.isEmpty())
-                {
-                    MapDescriptor md = MapSet.Find(mapName);
-                    if (!md.Equals(MapDescriptor::Empty))
-                    {
-                        mapsToUpdate->append(md);
-                        totalSizeOfSelectedMaps += md.FileSize;
-                    }
-                }
-            }
-        }
-    }
-    ui->progressBar->setMaximum(totalSizeOfSelectedMaps);
-    ui->progressBarUnzip->setMaximum(mapsToUpdate->size());
-    doUpdate(mapsToUpdate, MAPSFolder);
-    delete mapsToUpdate;
-}
-
-void MainWindow::updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
-{
-    totalDownloadedBytes += bytesReceived;
-    ui->progressBar->setValue(totalDownloadedBytes);
-}
-
-void MainWindow::updateFileWasUnzipped(bool result)
-{
-    if (result)
-        ui->progressBarUnzip->setValue(++unzippedFiles);
-}
-
 

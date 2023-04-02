@@ -30,7 +30,7 @@ private slots:
 
     void updateFileWasUnzipped(bool result);
 
-    void on_btnFastUpddate_clicked();
+    void on_btnCachedUpdate_clicked();
 
 public slots:
     void treeItemChanged(QTreeWidgetItem *item, int column); // slot function
@@ -56,6 +56,7 @@ private:
     void readSettings();
     void fillFolders();
     void fillListOfMaps();
+    void checkCache();
 
     void requestFileSize(MapDescriptor *md);
 

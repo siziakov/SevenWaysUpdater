@@ -10,12 +10,13 @@
 
 QString Downloader::CacheFolder;
 
-Downloader::Downloader(QObject* parent) :
+Downloader::Downloader(QObject* parent, bool cachedUpdate) :
     BaseClass(parent)
 {
     // Подключаемся к сигналу finished
     connect(&m_manager, &QNetworkAccessManager::finished, this, &Downloader::onReply);
     CacheFolder = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QDir::separator();
+    this->cachedUpdate = cachedUpdate;
 }
 
 bool Downloader::get(const QString& targetFolder, const QUrl& url)
@@ -51,6 +52,14 @@ bool Downloader::get(const QString& targetFolder, const QUrl& url)
     return true;
 }
 
+void Downloader::unzipFile(const QString &targetFolder, QString fileName, bool removeFileAfterUnzipping)
+{
+    int res = zip_extract(fileName.toStdString().c_str(), targetFolder.toStdString().c_str(), Downloader::on_extract, nullptr);
+    emit updateFileWasUnzipped(res == 0);
+    if (removeFileAfterUnzipping)
+        QFile::remove(fileName);
+}
+
 void Downloader::onReadyRead()
 {
     // Если есть данные и файл открыт
@@ -83,8 +92,10 @@ void Downloader::onReply(QNetworkReply* reply)
         m_file->flush();
         m_file->close();
 
-        int res = zip_extract(fileName.toStdString().c_str(), targetFolder.toStdString().c_str(), Downloader::on_extract, nullptr);
-        emit updateFileWasUnzipped(res == 0);
+        if (!cachedUpdate)
+        {
+            unzipFile(targetFolder, fileName, !cachedUpdate);
+        }
     }
     else
     {

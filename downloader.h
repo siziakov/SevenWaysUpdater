@@ -12,12 +12,14 @@ class Downloader : public QObject
     using BaseClass = QObject;
 
 public:
-    explicit Downloader(QObject* parent = nullptr);
+    explicit Downloader(QObject* parent = nullptr, bool cachedUpdate = false);
 
     // Метод для запуска скачиввания
     bool get(const QString& targetFolder, const QUrl& url);
 
     static QString CacheFolder;
+
+    void unzipFile(const QString& targetFolder, QString fileName, bool removeFileAfterUnzipping = false);
 
 public slots:
     // Метод отмены загрузки
@@ -41,6 +43,9 @@ private:
     QString targetFolder;
 
     qint64 bytesPart;
+
+    bool cachedUpdate = false;
+
     static int on_extract(const char *filename, void *arg);
     void updateDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 };
