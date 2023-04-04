@@ -54,6 +54,9 @@ private:
 
     void writeSettings();
     void readSettings();
+    void writeLastMaps(QList<MapDescriptor> *maps);
+    QList<MapDescriptor> *readLastMaps();
+
     void fillFolders();
     void fillListOfMaps();
     void checkCache();

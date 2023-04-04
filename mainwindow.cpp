@@ -42,35 +42,35 @@ MainWindow::~MainWindow()
 void MainWindow::updateParentItem(QTreeWidgetItem *item)
 {
     QTreeWidgetItem* parent = item->parent();
-    if(parent==NULL) // There is no parent node, it is root node
+    if (parent == NULL) // There is no parent node, it is root node
     {
         return;
     }
     // Select the number of child nodes
-    int selectCount=0;
-    int childCount= parent->childCount();
-    for(int i=0;i<childCount;i++)
+    int selectCount = 0;
+    int childCount = parent->childCount();
+    for(int i= 0; i < childCount; i++)
     {
         QTreeWidgetItem *childItem = parent->child(i);
-        if(childItem->checkState(0)== Qt::Checked)
+        if (childItem->checkState(0) == Qt::Checked)
         {
             selectCount++;
         }
     }
-    if(selectCount<=0)
+    if (selectCount <= 0)
     {
         // Select the state / semi-selected state -> change to unchecked state
         parent->setCheckState(0, Qt::Unchecked);
     }
-    else if(selectCount>0 && selectCount<childCount)
+    else if(selectCount > 0 && selectCount < childCount)
     {
         // Unchecked Status / Select Status -> Change to some of the status
-        parent->setCheckState(0,Qt::PartiallyChecked); // Partial selection
+        parent->setCheckState(0, Qt::PartiallyChecked); // Partial selection
     }
-    else if(selectCount==childCount)
+    else if(selectCount == childCount)
     {
         // Unchecked state / semi-selected state -> Change to select the status
-        parent->setCheckState(0,Qt::Checked);
+        parent->setCheckState(0, Qt::Checked);
     }
 }
 
@@ -86,7 +86,7 @@ void MainWindow::treeItemChanged(QTreeWidgetItem *item, int column)
 
     if(Qt::Checked == item -> checkState(0)) // CheckState (Column) Returns the check status of the label in the given column (select status)
     {
-        QTreeWidgetItem* parent = item->parent();  // The last level of the project?
+        QTreeWidgetItem *parent = item->parent();  // The last level of the project?
         int count = item->childCount(); // Return to the number of child nodes of the current node
         if(count > 0) // is a tree node
         {
@@ -128,6 +128,8 @@ void MainWindow::writeSettings()
     appSettings.endGroup();
 }
 
+
+
 void MainWindow::readSettings()
 {
     QSettings appSettings("RS-Soft", "Seven Ways Updater");
@@ -135,6 +137,39 @@ void MainWindow::readSettings()
     lastOpenedFile = appSettings.value("lastOpenedFile", "").toString();
     appSettings.endGroup();
     fillFolders();
+}
+
+void MainWindow::writeLastMaps(QList<MapDescriptor> *maps)
+{
+    QSettings appSettings("RS-Soft", "Seven Ways Updater");
+    appSettings.beginWriteArray("Maps");
+    for (int i = 0; i < maps->size(); i++)
+    {
+        appSettings.setArrayIndex(i);
+        appSettings.setValue("MapName", maps->at(i).Name);
+        appSettings.setValue("MapDate", maps->at(i).DateS);
+        appSettings.setValue("MapSize", maps->at(i).FileSize);
+    }
+    appSettings.endArray();
+}
+
+QList<MapDescriptor> *MainWindow::readLastMaps()
+{
+    QList<MapDescriptor> *maps = new QList<MapDescriptor>();
+    QSettings appSettings("RS-Soft", "Seven Ways Updater");
+    int size = appSettings.beginReadArray("Maps");
+    for (int i = 0; i < size; i++)
+    {
+        appSettings.setArrayIndex(i);
+        MapDescriptor map;
+        map.Name = appSettings.value("MapName").toString();
+        map.DateS = appSettings.value("MapDate").toString();
+        map.Date = QDateTime::fromString(map.DateS);
+        map.FileSize = appSettings.value("MapSize").toInt();
+        maps->append(map);
+    }
+    appSettings.endArray();
+    return maps;
 }
 
 void MainWindow::fillFolders()
@@ -284,6 +319,7 @@ void MainWindow::prepareAndUpdateMaps()
     }
     ui->progressBar->setMaximum(totalSizeOfSelectedMaps);
     ui->progressBarUnzip->setMaximum(mapsToUpdate->size());
+    writeLastMaps(mapsToUpdate);
     doUpdate(mapsToUpdate, MAPSFolder);
     delete mapsToUpdate;
 }
