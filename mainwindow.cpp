@@ -120,6 +120,24 @@ void MainWindow::treeItemChanged(QTreeWidgetItem *item, int column)
     }
 }
 
+bool MainWindow::isMapInCacheExist(MapDescriptor md)
+{
+    if (offlineMapsCached != nullptr)
+        for(MapDescriptor m: *offlineMapsCached)
+            if (md.Name == m.Name)
+                return true;
+    return false;
+}
+
+bool MainWindow::isMapInCacheOlder(MapDescriptor md)
+{
+    if (offlineMapsCached != nullptr)
+        for(MapDescriptor m: *offlineMapsCached)
+            if (md.Name == m.Name)
+                return m.Date < md.Date;
+    return false;
+}
+
 void MainWindow::writeSettings()
 {
     QSettings appSettings("RS-Soft", "Seven Ways Updater");
@@ -142,6 +160,7 @@ void MainWindow::readSettings()
 void MainWindow::writeLastMaps(QList<MapDescriptor> *maps)
 {
     QSettings appSettings("RS-Soft", "Seven Ways Updater");
+    appSettings.remove("Maps");
     appSettings.beginWriteArray("Maps");
     for (int i = 0; i < maps->size(); i++)
     {
@@ -179,6 +198,8 @@ void MainWindow::fillFolders()
     MAPSFolder = EXEFolder + "maps" + QDir::separator();
     if (!QDir(MAPSFolder).exists())
         MAPSFolder = EXEFolder + "Maps" + QDir::separator();
+    if (!QDir(MAPSFolder).exists())
+        offlineMapsCached = readLastMaps();
     CacheFolder = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QDir::separator();
     QDir cacheDir(CacheFolder);
     if (!cacheDir.exists())
@@ -210,11 +231,9 @@ void MainWindow::fillListOfMaps()
             subItem->setText(3, md.DateS);
             subItem->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
             subItem->setCheckState(0, Qt::Unchecked);
-            if (md.FileExists())
+            if (md.FileExists() || isMapInCacheExist(md))
             {
                 subItem->setBackground(1, mapIsOnDeviceBrush);
-                //subItem->setBackground(2, mapIsOnDeviceBrush);
-                //subItem->setBackground(3, mapIsOnDeviceBrush);
             }
             item->addChild(subItem);
         }
@@ -259,9 +278,9 @@ void MainWindow::mapInfoUpdated(MapDescriptor *md)
             {
                 item->setText(2, md->FileSizeS);
                 item->setText(3, md->DateS);
-                if (md->FileExists())
+                if (md->FileExists() || isMapInCacheExist(md))
                 {
-                    if (md->FileIsOlder())
+                    if (md->FileIsOlder() || isMapInCacheOlder(md))
                         item->setCheckState(0, Qt::Checked);
                     else
                         item->setCheckState(0, Qt::Unchecked);

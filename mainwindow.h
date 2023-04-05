@@ -51,6 +51,10 @@ private:
     static Maps MapSet;
 
     static QTreeWidget *mapsTree;
+    QList<MapDescriptor> *offlineMapsCached = nullptr;
+
+    bool isMapInCacheExist(MapDescriptor md);
+    bool isMapInCacheOlder(MapDescriptor md);
 
     void writeSettings();
     void readSettings();
